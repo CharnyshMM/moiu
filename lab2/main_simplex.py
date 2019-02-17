@@ -1,5 +1,6 @@
 import math
 import numpy as np
+from lab1 import inverse_matrix
 
 x_vector__t = [0,0,1,3,2] # 5
 
@@ -54,36 +55,57 @@ def get_new_basis_index(z_vector, x_vector, J_b):
 
 A_b = get_A_b_matrix(A_matrix, J_b)
 A_b_inversed = A_b.I
+iterations_count = 1
 
 while True:
+    print(f"\n# {iterations_count} \n")
+    iterations_count += 1
+
     c_b__t = get_c_b_matrix(c_vect__t.A1, J_b)
+    print(f"C_b = {c_b__t}")
     u_potentials__t = c_b__t * A_b_inversed
+    print(f"U_potentials = {u_potentials__t}")
     delta_estimations__t = u_potentials__t * A_matrix - c_vect__t
+    print(f"Delta_estimations = {delta_estimations__t}")
 
     first_negative_index  = is_optimal_plan_found(delta_estimations__t.A1, J_b)
 
     if first_negative_index < 0:
+        print("\n************************")
         print("WE'VE GOT A PLAN!")
         print(x_vector__t)
         break
     
     z_vect = A_b_inversed * A_matrix[:,first_negative_index]
     z_vect = z_vect.A1
+    print(f"Z = {z_vect}")
     q0, q0_index = get_new_basis_index(z_vect, x_vector__t, J_b)
     if q0 == math.inf:
-        print("Error. INFINITY function")
+        print("\nError. INFINITY function")
         break
 
+    print(f"Tetta_{q0_index} = {q0}")
     J_b[q0_index] = first_negative_index
+    print(f"New J_b = {J_b}")
 
     x_new = [0]*len(x_vector__t)
     for i, j in enumerate(J_b):
         x_new[j] = x_vector__t[j] - q0 * z_vect[i]
     x_new[first_negative_index] = q0
     x_vector__t = x_new
+    print(f"X = {x_vector__t}")
 
-    A_b = get_A_b_matrix(A_matrix, J_b)
-    A_b_inversed = A_b.I
+    new_column = A_matrix[:,first_negative_index:first_negative_index+1]
+    A_b_inversed = inverse_matrix(
+        A_b, 
+        A_b_inversed, 
+        new_column,
+        q0_index
+    )
+
+    A_b[:,q0_index] = new_column
+    print("A_b =\n",A_b)
+    print("A_b_inversed =\n", A_b_inversed)
     
 
 
