@@ -17,21 +17,21 @@ def get_Q_matrix(l_vect, i, n):
 def get_a_dash_inverted(q_mtrx, a_dash_mtrx):
     return q_mtrx * a_dash_mtrx
 
-n = 3
-i = 1
-A_matrix = np.matrix([
-    [1, 0, 5],
-    [2, 1, 6],
-    [3, 4, 0]
-    ]
-)
-# A_inv_matrix = numpy.linalg.inv(A_matrix)
-A_inv_matrix = np.matrix([
-    [-24, 20, -5],
-    [18, -15, 4],
-    [5, -4, 1]
-    ]
-)
+# n = 3
+# i = 1
+# A_matrix = np.matrix([
+#     [1, 0, 5],
+#     [2, 1, 6],
+#     [3, 4, 0]
+#     ]
+# )
+# # A_inv_matrix = numpy.linalg.inv(A_matrix)
+# A_inv_matrix = np.matrix([
+#     [-24, 20, -5],
+#     [18, -15, 4],
+#     [5, -4, 1]
+#     ]
+# )
 
 x_vector = np.matrix([
     [2],
@@ -40,6 +40,7 @@ x_vector = np.matrix([
 ])
 
 def inverse_matrix(A_matrix, A_inv_matrix, x_vector, i):
+    n = len(x_vector)
     l_vect = get_l_vector(A_inv_matrix, x_vector)
     #print("l:= ", l_vect)
 
