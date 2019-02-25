@@ -2,18 +2,34 @@ import math
 import numpy as np
 from lab1 import inverse_matrix
 
-x_vector__t = [0,0,1,3,2] # 5
+# x_vector__t = [0,0,1,3,2] # 5
+
+# A_matrix = np.matrix(
+#     [[-1, 1, 1, 0, 0],
+#      [1, 0, 0, 1, 0],
+#      [0, 1, 0, 0, 1]]
+# )
+
+# c_vect__t = np.matrix([[1,1,0,0,0]])
+
+# J_b = [2,3,4]
+
+c_vect__t = np.matrix([[-5, -2, 3, -4, -6, 0, -1, -5]])
+
+x_vector__t = [4, 0, 0, 6, 2, 0, 0, 5]
 
 A_matrix = np.matrix(
-    [[-1, 1, 1, 0, 0],
-     [1, 0, 0, 1, 0],
-     [0, 1, 0, 0, 1]]
+    [
+    [0,1,4,1,0,-3,5,0],
+    [1,-1,0,1,0,0,1,0],
+    [0,7,-1,0,-1,3,8,0],
+    [1,1,1,1,0,3,-3,1]
+    ]
 )
 
-c_vect__t = np.matrix([[1,1,0,0,0]])
 
-J_b = [2,3,4] # possibly i-1 ???
 
+J_b = [0,3,4,7]
 
 def get_A_b_matrix(A_matrix, J_b):
     result = None
@@ -54,6 +70,7 @@ def get_new_basis_index(z_vector, x_vector, J_b):
     return min_q, min_q_index
 
 A_b = get_A_b_matrix(A_matrix, J_b)
+print("A_b = \n", A_b)
 A_b_inversed = A_b.I
 iterations_count = 1
 
@@ -74,6 +91,8 @@ while True:
         print("\n************************")
         print("WE'VE GOT A PLAN!")
         print(x_vector__t)
+
+        print("c'*x0 = ", c_vect__t*np.matrix([x_vector__t]).T)
         break
     
     z_vect = A_b_inversed * A_matrix[:,first_negative_index]
@@ -96,6 +115,7 @@ while True:
     print(f"X = {x_vector__t}")
 
     new_column = A_matrix[:,first_negative_index:first_negative_index+1]
+
     A_b_inversed = inverse_matrix(
         A_b, 
         A_b_inversed, 
@@ -104,6 +124,8 @@ while True:
     )
 
     A_b[:,q0_index] = new_column
+    #A_b_inversed = A_b.I
+
     print("A_b =\n",A_b)
     print("A_b_inversed =\n", A_b_inversed)
     
