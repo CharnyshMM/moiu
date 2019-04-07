@@ -31,8 +31,9 @@ A_matrix = np.matrix([
 
 b_vector = np.matrix([[-2],[4],[3]])
 
-J_b = [2, 5, 7]
-
+J_b = [1, 4, 6]
+y_vector = np.matrix([[1],[1],[1]])
+sigmas_vector = np.matrix([[1], [0], [1], [2], [0], [4], [0], [1]])
 
 def foreach_predicate(iterable, predicate):
     for i, item in enumerate(iterable):
@@ -45,7 +46,7 @@ J = [j for j in range(n)]
 
 while (True):
   A_b_inv_matrix = get_A_b_matrix(A_matrix, J_b).I
-  y_vector = (get_c_b(c_vector.A1, J_b) * A_b_inv_matrix).T
+  # y_vector = (get_c_b(c_vector.A1, J_b) * A_b_inv_matrix).T
 
   kappa_b = (A_b_inv_matrix * b_vector).A1
 
@@ -64,8 +65,8 @@ while (True):
   delta_y__t = A_b_inv_matrix[j_negative,:]
 
   mu = []
-  min_ksi = math.inf
-  min_ksi_index = -1
+  min_sigma = math.inf
+  min_sigma_index = -1
   has_negative_items = False
   for j in J:
     if j in J_b:
@@ -76,17 +77,21 @@ while (True):
     if mu_j < 0:
       has_negative_items = True
 
-      ksi = (( c_vector.A1[j] - A_matrix[:,j].T * y_vector ) / mu_j)[0,0]
-      if ksi < min_ksi:
-        min_ksi = ksi
-        min_ksi_index = j
+      # sigma = (( - c_vector.A1[j] + A_matrix[:,j].T * y_vector ) / mu_j)[0,0]
+      sigma = (-sigmas_vector[j]/mu_j)[0,0]
+      if sigma < min_sigma:
+        min_sigma = sigma
+        min_sigma_index = j
+      
 
   if not has_negative_items:
     print("not solvable")
     raise Exception("not solvable")
 
-  J_b[j_negative] = min_ksi_index
-  y_vector = y_vector - min_ksi * delta_y__t.T
+  J_b[j_negative] = min_sigma_index
+  y_vector = y_vector - min_sigma * delta_y__t.T
+  sigmas_vector = (y_vector.T*A_matrix - c_vector.T).T
+
 
 
 
