@@ -97,20 +97,25 @@ def get_U_Vs(c, J_b):
   return u, v
 
 def check_optimality(u, v, c, J_b):
-  max_one = -math.inf
+  max_one = math.inf
   max_one_point = (-1, -1)
   for i, u_i in enumerate(u):
     for j, v_j in enumerate(v):
-      if (i,j) in J_b:
-        continue
-      
-      if u_i + v_j > c[i,j]:
-        if max_one < u_i + v_j:
-          max_one = u_i + v_j
-          max_one_point = (i, j)
+      if u[i] + v[j] > c[i,j]:
+        return False, (i,j)
+      # if (i,j) in J_b:
+      #   continue
+      # estimation = c[i,j] - u_i - v_j
+      # print(f"estimation[{i},{j}] = {estimation}")
+      # if estimation > 0:
+      #   continue
+      # if max_one > estimation:
+      #     max_one = estimation
+      #     max_one_point = (i, j)
 
-  if max_one_point[0] > 0:
-    return False, max_one_point
+  # if max_one_point[0] > 0:
+  #   print("max_point", max_one)
+  #   return False, max_one_point
   return True, None
 
 
@@ -140,7 +145,7 @@ def find_cycle_simple(graph_in, m, n):
     return graph
   
 def get_min_element_of_matrix(mtx, points):
-  m,n = mtx.shape
+  print("points", points)
   min_point = (None, None)
   min_value = math.inf
   for i,j in points:
@@ -182,7 +187,9 @@ def update_plan(x__in, cycle__in, J_b__in, i_0, j_0):
         j = next_j
     
     q, (q_i, q_j) = get_min_element_of_matrix(x__in, U_minus)
+    print("to pop: (min q of U minus)",q_i, q_j)
     cycle = cycle * 0.5 * q
+    print(cycle)
     x = x__in + cycle
     J_b = J_b__in.copy()
     J_b.remove((q_i,q_j))
