@@ -1,4 +1,6 @@
 import numpy as np
+import sympy as sp
+import math
 
 a = []
 b = []
@@ -14,12 +16,12 @@ def balance_conditions(a, b, c):
   m,n = c.shape
   if sum_a > sum_b:
     b.append(sum_a - sum_b)
-    c_copy = np.append(c, np.zeros((1, m)), axis=0)
+    c_copy = np.append(c, np.zeros((m,1)), axis=1)
     return a, b, c_copy
   
   if sum_b > sum_a:
     a.append(sum_b - sum_a)
-    c_copy = np.append(c, np.zeros((n, 1)), axis=1)
+    c_copy = np.append(c, np.zeros((1, n)), axis=0)
     return a, b, c_copy
 
 def north_west_basis_plan(a, b, c):
@@ -37,7 +39,7 @@ def north_west_basis_plan(a, b, c):
         i+=1
       else:
         j+=1
-    diff = _b[i] - _a[j]
+    diff = _b[j] - _a[i]
     X_plan[i, j] = abs(diff)
     J_b.append((i, j))
     if diff >= 0:
@@ -53,50 +55,64 @@ def north_west_basis_plan(a, b, c):
   return X_plan, J_b
 
 
+def new_north_west_plan_builder(a__in,b__in, c):
+  a = a__in.copy()
+  b = b__in.copy()
+  m,n = c.shape
+  X_plan = np.zeros((m,n))
+  J_b = []
+  j = 0
+  for i in range(m):
+    while a[i] != 0:
+      diff = b[j] - a[i]
+      J_b.append((i,j))
+      if (diff > 0):
+        X_plan[i,j] = a[i]
+        a[i] = 0
+        b[j] = diff
+      else:
+        X_plan[i,j] = b[j]
+        a[i] = -diff
+        b[j] = 0
+        j+=1
+
+  return X_plan, J_b
+      
+
 def get_U_Vs(c, J_b):
-  u = [0]
-  v = []
+  system = []
+  m,n = c.shape
+  u = [sp.Symbol(f"u{i}") for i in range(m)]
+  v = [sp.Symbol(f"v{j}") for j in range(n)]
 
+  system.append(u[0])
   for i,j in J_b:
-    if len(u) > i:
-      v.append(c[i,j] - u[i])
-    elif len(v) > j:
-      u.append(c[i,j] - v[i])
-
+    system.append(u[i] + v[j]- c[i, j])
+  
+  results = sp.solve(system, u+v)
+  results = results
+  results = list(results.values())
+  u = results[:m]
+  v = results[m:]
   return u, v
 
-
 def check_optimality(u, v, c, J_b):
+  max_one = -math.inf
+  max_one_point = (-1, -1)
   for i, u_i in enumerate(u):
     for j, v_j in enumerate(v):
       if (i,j) in J_b:
         continue
       
       if u_i + v_j > c[i,j]:
-        return False, (i, j)
+        if max_one < u_i + v_j:
+          max_one = u_i + v_j
+          max_one_point = (i, j)
 
+  if max_one_point[0] > 0:
+    return False, max_one_point
   return True, None
 
-
-def build_graph(J_b):
-    graph = []
-
-    for k, (i_0, j_0) in enumerate(J_b):
-        for i, j in J_b[k:]:
-            if i == i_0 and j == j_0:
-                continue
-            if i == i_0:
-                graph.append(((i_0, j_0), (i, j)))
-                graph.append(((i, j), (i_0, j_0)))
-                break
-        for i, j in J_b[k:]:
-            if i == i_0 and j == j_0:
-                continue
-            if j == j_0:
-                graph.append(((i_0, j_0), (i, j)))
-                graph.append(((i, j), (i_0, j_0)))
-                break
-    return graph
 
 def build_graph_simple(J_b, m, n):
     graph = np.zeros((m,n))
@@ -106,9 +122,9 @@ def build_graph_simple(J_b, m, n):
     return graph
 
 
-def find_cycle_simple(graph, m, n):
+def find_cycle_simple(graph_in, m, n):
     something_deleted = True
-    deletings_count = 0
+    graph = graph_in.copy()
     while something_deleted:
         something_deleted = False
         for i,row in enumerate(graph):
@@ -121,21 +137,34 @@ def find_cycle_simple(graph, m, n):
                 continue
             graph[:, j] = np.zeros(m)
             something_deleted = True
-
+    return graph
   
-def update_plan(x, cycle_in, i_0, j_0):
+def get_min_element_of_matrix(mtx, points):
+  m,n = mtx.shape
+  min_point = (None, None)
+  min_value = math.inf
+  for i,j in points:
+      if min_value > mtx[i,j]:
+        min_value = mtx[i,j]
+        min_point = (i,j)
+  return min_value, min_point
+
+def update_plan(x__in, cycle__in, J_b__in, i_0, j_0):
     visited_mark = 2
-    m,n = x.shape
-    q = x.min()
-    cycle = cycle_in.copy()
+    m,n = x__in.shape
+   
+    cycle = cycle__in.copy()
     
     i = i_0
     j = j_0
     next_i = i_0
     next_j = j_0
 
+    U_minus = []
     while True:
         cycle[i,j] = visited_mark
+        if visited_mark < 0:
+          U_minus.append((i,j))
         visited_mark = -visited_mark
         
         for jj in range(0, n):
@@ -152,9 +181,12 @@ def update_plan(x, cycle_in, i_0, j_0):
         i = next_i
         j = next_j
     
+    q, (q_i, q_j) = get_min_element_of_matrix(x__in, U_minus)
     cycle = cycle * 0.5 * q
-    return cycle
-    
-    
+    x = x__in + cycle
+    J_b = J_b__in.copy()
+    J_b.remove((q_i,q_j))
+
+    return x, J_b
   
  
