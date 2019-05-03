@@ -7,6 +7,8 @@ from ordered_set import OrderedSet
 
 sys.stdout = open("log.txt", "w+")
 
+ROUND_DIGITS = 5
+
 # # example 1
 # A_matrix = np.matrix([
 #   [1, 2, 0, 1, 0, 4, -1, -3],
@@ -71,22 +73,22 @@ sys.stdout = open("log.txt", "w+")
 
 
 # # example 3, no limit
-# A_matrix = np.matrix([
-#   [0, 2, 1, 4, 3, 0, -5, -10],
-#   [-1, 3, 1, 0, 1, 3, -5, -6],
-#   [1, 1, 1, 0, 1, -2, -5, 8]
-# ])
-# b = np.matrix([[6, 4, 14]]).T
+A_matrix = np.matrix([
+  [0, 2, 1, 4, 3, 0, -5, -10],
+  [-1, 3, 1, 0, 1, 3, -5, -6],
+  [1, 1, 1, 0, 1, -2, -5, 8]
+])
+b = np.matrix([[6, 4, 14]]).T
 
-# D_matrix = np.eye(8,8)
-# D_matrix[2, 2] = 0
-# D_matrix[6,6] = 0
+D_matrix = np.eye(8,8)
+D_matrix[2, 2] = 0
+D_matrix[6,6] = 0
 
-# c = np.matrix([[1, 3, -1, 3, 5, 2, -2, 0]]).T
+c = np.matrix([[1, 3, -1, 3, 5, 2, -2, 0]]).T
 
-# x = np.matrix([[0, 2, 0, 0, 4, 0, 0, 1]]).T
-# J_op = OrderedSet([1, 4, 7])
-# J_ast = OrderedSet([1, 4, 7])
+x = np.matrix([[0, 2, 0, 0, 4, 0, 0, 1]]).T
+J_op = OrderedSet([1, 4, 7])
+J_ast = OrderedSet([1, 4, 7])
 
 # # example 4 result:=  [[309.5492596]]
 # A_matrix = np.matrix([
@@ -113,21 +115,21 @@ sys.stdout = open("log.txt", "w+")
 # J_op = OrderedSet([0, 3, 4])
 # J_ast = OrderedSet([0, 3, 4])
 
-# example 4 result:=  [[309.5492596]]
-A_matrix = np.matrix([
-  [0, 0, 1, 5, 2, 0, -5, -4],
-  [1, 1, -1, 0, 1, -1, -1, -1],
-  [1, 1, 1, 0, 1, 2, 5, 8]
-])
-b = np.matrix([[15, -1, 9]]).T
+# # example 5 result:=  [[8.666656]]
+# A_matrix = np.matrix([
+#   [0, 0, 1, 5, 2, 0, -5, -4],
+#   [1, 1, -1, 0, 1, -1, -1, -1],
+#   [1, 1, 1, 0, 1, 2, 5, 8]
+# ])
+# b = np.matrix([[15, -1, 9]]).T
 
-D_matrix = np.zeros((8,8))
+# D_matrix = np.zeros((8,8))
 
-c = np.matrix([[1, -3, 4, 3, 5, 6, -2, 0]]).T
+# c = np.matrix([[1, -3, 4, 3, 5, 6, -2, 0]]).T
 
-x = np.matrix([[4, 0, 5, 2, 0, 0, 0, 0]]).T
-J_op = OrderedSet([0, 2, 3])
-J_ast = OrderedSet([0, 2, 3])
+# x = np.matrix([[4, 0, 5, 2, 0, 0, 0, 0]]).T
+# J_op = OrderedSet([0, 2, 3])
+# J_ast = OrderedSet([0, 2, 3])
 
 
 
@@ -176,7 +178,7 @@ def get_directions_vector(D_matrix, A_matrix, j_0, J, J_ast):
   bl = (-H_matrix.I * bb).A1[:len(J_ast)]
   jj = 0
   for j in J_ast:
-    l[j]=round(bl[jj], 5)
+    l[j]=round(bl[jj], ROUND_DIGITS)
     jj+=1
   l[j_0] = 1
 
@@ -191,7 +193,7 @@ def get_min_tetta_step(l, x, J_ast):
     l_j = l[j]
     tetta = math.inf
     if l_j < 0:
-      tetta = round(-x[j] / l_j, 5)
+      tetta = round(-x[j] / l_j, ROUND_DIGITS)
     if tetta < min_tetta:
       min_tetta = tetta
       min_tetta_index = j
@@ -255,14 +257,14 @@ while (True):
     l = get_directions_vector(D_matrix, A_matrix, j_0, J, J_ast)
 
     ## step 4
-    little_delta = round((l.T*D_matrix*l).sum(), 5)
+    little_delta = round((l.T*D_matrix*l).sum(), ROUND_DIGITS)
     tetta_j0 = math.inf
     if little_delta > 0: # >???????
       tetta_j0 = abs(delta[j_0]) / little_delta
 
     j, tetta_j_ast = get_min_tetta_step(l.A1, x.A1, J_ast)
 
-    tetta_final = round(tetta_j_ast, 5)
+    tetta_final = round(tetta_j_ast, ROUND_DIGITS)
     j_ast = j
     if tetta_j0 < tetta_j_ast:
       tetta_final = tetta_j0
