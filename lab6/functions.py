@@ -1,11 +1,5 @@
 import numpy as np 
 
-def foreach_predicate(iterable, predicate):
-    for i, item in enumerate(iterable):
-        if not predicate(item):
-            return i, item
-    return -1, None
-
 def get_A_b_matrix(A_matrix, J_b):
     result = None
     for j in J_b:
