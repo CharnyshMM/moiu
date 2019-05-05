@@ -36,14 +36,20 @@ def get_A_b_constraints(x_symbols, g, x_values):
   return A_ub, b_ub
 
 
-# def find_a_parameter(df_dx_array, l_0, delta_x):
-#   a = Symbol('a')
-#   df_dx_vector = np.matrix(df_dx_array)
-#   d = (df_dx_vector*l_0 + a*df_dx_vector *delta_x).sum()
-#   print(solve_rational_inequalities([
-    
-#   ]))
+def get_alpha_parameter(df_dx, delta_x, l_0):
+  
+  print("get alpha:")
+  print("df_dx", df_dx)
+  print("l_0", l_0)
 
+  print("delta_X",delta_x)
+  a = df_dx*l_0.T
+  b = df_dx*delta_x
+  print("a:", a)
+  print("b:", b)
+  if b > 0:
+    return -a/2/b
+  return 1
 
 x_symbols = np.matrix([[Symbol(f"x{i}") for i in range(n)]]).T
 print("x:", x_symbols)
@@ -60,11 +66,11 @@ print("f(old_x) = ", f.subs(old_x_values))
 
 # gi := 0.5x' B(i)' B(i)x + c(i)'x + α(i), i = 1,...,5, x ∈ ||8
 
-g = get_g_functions(x_symbols, B, c, a)
-print("g: ", *g, sep='\n')
+g_functions = get_g_functions(x_symbols, B, c, a)
+print("g: ", *g_functions, sep='\n')
 
 
-A_ub, b_ub = get_A_b_constraints(x_symbols, g, old_x_values)
+A_ub, b_ub = get_A_b_constraints(x_symbols, g_functions, old_x_values)
 
 print("---- SUBTASK DATA -----")
 print("A_ub: ", A_ub)
@@ -94,18 +100,28 @@ if (subtask_function_val >= 0):
   print("x_0 is already a great plan")
   exit(0)
 
-
-t = 0.5
-a = 1
-
 delta_x = x_dash - x_ast
+alpha = get_alpha_parameter(np.matrix([objective_function]), delta_x, l_0) 
+t = 1
+better_x = None
+new_x_values = None
+while True:
+  print("alpha:=", alpha)
+  print("t:=", t)
+  better_x = x_ast + t*(l_0.T + alpha*delta_x)
+  new_x_values = {x_symbols[i, 0]: better_x[i, 0] for i in range(n)}
+  print("better_x: ", better_x)
+  all_x_items_are_nonnegative = all([x_i >= 0 for x_i in better_x.A1])
+  print("all_x_items_are_positive", all_x_items_are_nonnegative)
+  all_g_funcs_are_nonpositive = all([g_i.subs(new_x_values) <= 0 for g_i in g_functions])
+  print("all_g_funcs_are_nonpositive", all_g_funcs_are_nonpositive)
+  if f.subs(old_x_values) > f.subs(new_x_values) and all_x_items_are_nonnegative and all_g_funcs_are_nonpositive:
+    break
+  t = 0.5*t
 
-better_x = x_ast + t*(l_0.T + a*delta_x)
 
 print("------ PLAN IMPROVED -----")
-print("better_x: ", better_x)
 
-new_x_values = {x_symbols[i,0]: better_x[i, 0] for i in range(n)}
 
-print("f(old_x) = ", f.subs(old_x_values))
+print("f(old_x) = ",  f.subs(old_x_values))
 print("f(better_x):= ", f.subs(new_x_values))
