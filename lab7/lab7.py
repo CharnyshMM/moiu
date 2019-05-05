@@ -94,6 +94,8 @@ result = linprog(objective_function, A_ub=A_ub, b_ub=b_ub, bounds=bounds)
 l_0 = np.matrix(result.x)
 subtask_function_val = result.fun
 print("l_0: ", l_0)
+print("----Subtask solved-----")
+
 print("df_dx(old_x)*l_0 = ",subtask_function_val)
 
 if (subtask_function_val >= 0):
