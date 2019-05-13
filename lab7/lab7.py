@@ -37,7 +37,6 @@ def get_A_b_constraints(x_symbols, g, x_values):
 
 
 def get_alpha_parameter(df_dx, delta_x, l_0):
-  
   print("get alpha:")
   print("df_dx", df_dx)
   print("l_0", l_0)
